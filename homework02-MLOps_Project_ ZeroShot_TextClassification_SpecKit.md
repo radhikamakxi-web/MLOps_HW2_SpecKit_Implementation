@@ -67,7 +67,7 @@ MoritzLaurer/deberta-v3-base-zeroshot-v2.0
 
 The application must support at least **two zero-shot classification models**.
 
-This project uses the corrected and recommended bucket name `zeroshot_learning_output`. The bucket name must remain configurable through an environment variable.
+This project uses the corrected and recommended bucket name `zeroshot-learning-output`. The bucket name must remain configurable through an environment variable.
 
 ---
 
@@ -224,7 +224,7 @@ Every successful classification request must be saved to MinIO.
 Use the following default bucket name:
 
 ```text
-zeroshot_learning_output
+zeroshot-learning-output
 ```
 
 The application must create the bucket automatically if it does not exist.
@@ -422,12 +422,12 @@ The Constitution should include:
 - **Programming language:** The project must always be implemented in Python. Other languages may be used only for supporting configuration, infrastructure, or deployment files, such as YAML, JSON, Dockerfiles, or shell scripts.
 - **Deep-learning framework:** PyTorch must always be used as the deep-learning framework for model loading and inference. Other deep-learning frameworks must not be introduced unless an exception is formally documented and approved.
 - **Object storage:** MinIO must always be used as the object-storage system for classification outputs. Prediction results must not be stored in alternative object-storage services or only on the local filesystem.
-- **Storage contract:** Every successful classification result must be persisted as structured JSON in the configured MinIO bucket `zeroshot_learning_output`. Local files may be used for temporary processing, caching, or testing, but they must not replace MinIO as the system of record.
+- **Storage contract:** Every successful classification result must be persisted as structured JSON in the configured MinIO bucket `zeroshot-learning-output`. Local files may be used for temporary processing, caching, or testing, but they must not replace MinIO as the system of record.
 - **Technology consistency:** The implementation must use Python, PyTorch, Hugging Face Transformers, Streamlit, and MinIO as the standard technology stack for the first version. Any replacement or addition to this stack requires a documented architectural decision explaining the reason, benefits, risks, and impact on reproducibility.
 - **Reproducible runtime:** The Python version, Python dependencies, PyTorch version, Transformers version, model identifiers, model revisions, and MinIO configuration must be pinned or documented clearly enough for another developer to reproduce the application.
 - **Framework interoperability:** Hugging Face models may be loaded through the Transformers library, but inference must run using the PyTorch backend. The project must not silently switch to another backend.
 - **Project purpose:** Build a reproducible Python-based zero-shot text-classification platform using PyTorch, Hugging Face Transformers, Streamlit, and MinIO for learning and demonstrating MLOps practices.
-- **Data persistence:** Every successful classification must be saved as structured JSON in the configured MinIO bucket. MinIO is the mandatory object-storage system and the system of record for classification outputs. The default bucket name is `zeroshot_learning_output`.
+- **Data persistence:** Every successful classification must be saved as structured JSON in the configured MinIO bucket. MinIO is the mandatory object-storage system and the system of record for classification outputs. The default bucket name is `zeroshot-learning-output`.
 
 The Constitution should also define how compliance is checked. For example:
 
@@ -509,7 +509,7 @@ MINIO_ENDPOINT=minio:9000
 MINIO_ACCESS_KEY=minioadmin
 MINIO_SECRET_KEY=minioadmin
 MINIO_SECURE=false
-MINIO_BUCKET=zeroshot_learning_output
+MINIO_BUCKET=zeroshot-learning-output
 
 MODEL_DIR=./models
 HF_HOME=./.cache/huggingface
@@ -644,7 +644,7 @@ The project is complete when all of the following work:
 
 1. The application starts using documented commands.
 2. MinIO starts locally through Docker Compose.
-3. The MinIO bucket `zeroshot_learning_output` is created automatically.
+3. The MinIO bucket `zeroshot-learning-output` is created automatically.
 4. The administrator can see at least two configured models.
 5. The administrator can download the DeBERTa zero-shot model.
 6. The administrator can download the second model.
@@ -673,7 +673,7 @@ The project is complete when all of the following work:
 >
 > The application must support at least two zero-shot classification models, including `MoritzLaurer/deberta-v3-base-zeroshot-v2.0`. Provide an administrator page for downloading, caching, inspecting, and deleting models, as well as managing candidate labels. Provide a separate user page where a user can submit text, select a model and candidate labels, and receive a ranked zero-shot classification result.
 >
-> Every classification result must be saved as a JSON object in the MinIO bucket `zeroshot_learning_output`. The result must include the input text, predicted class, confidence scores, candidate labels, model identifier, request ID, and timestamp.
+> Every classification result must be saved as a JSON object in the MinIO bucket `zeroshot-learning-output`. The result must include the input text, predicted class, confidence scores, candidate labels, model identifier, request ID, and timestamp.
 >
 > Use Spec Kit to create a specification, implementation plan, data model, and task breakdown before coding. The final project must include tests, Docker Compose support for MinIO, environment-based configuration, logging, documentation, and basic CI validation. Downloaded models and credentials must not be committed to Git.
 
@@ -694,7 +694,7 @@ The student should demonstrate the following workflow:
 9. Submit a sample text.
 10. Display the predicted class, confidence, and ranked results.
 11. Open the MinIO console.
-12. Show the corresponding JSON result in `zeroshot_learning_output`.
+12. Show the corresponding JSON result in `zeroshot-learning-output`.
 13. Return to the administrator page and demonstrate model deletion or cache cleanup.
 14. Run the automated tests.
 

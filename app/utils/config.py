@@ -104,11 +104,11 @@ def get_app_version() -> str:
 
 
 def get_minio_settings() -> dict[str, Any]:
-    bucket = str(get_env("MINIO_BUCKET", "zeroshot_learning_output"))
+    bucket = str(get_env("MINIO_BUCKET", "zeroshot-learning-output"))
     try:
         check_bucket_name(bucket, strict=True)
     except ValueError:
-        raise ConfigurationError("MINIO_BUCKET must be an S3-compatible name; use zeroshot_learning_output.") from None
+        raise ConfigurationError("MINIO_BUCKET must be an S3-compatible name; use zeroshot-learning-output.") from None
     access_key = get_env("MINIO_ACCESS_KEY")
     secret_key = get_env("MINIO_SECRET_KEY")
     if not access_key or not secret_key or access_key == "replace-me" or secret_key == "replace-me":

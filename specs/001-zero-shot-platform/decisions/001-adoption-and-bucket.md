@@ -19,8 +19,8 @@ may provide additional evidence, but none will be invented for the original work
 
 ## Decision: bucket compatibility
 
-Use `zeroshot_learning_output` as the default bucket. Standard S3/MinIO bucket
-names do not allow underscores, so `zeroshot_learning_output` cannot be relied on
+Use `zeroshot-learning-output` as the default bucket. Standard S3/MinIO bucket
+names do not allow underscores, so `zeroshot-learning-output` cannot be relied on
 for a working deployment. Keep `MINIO_BUCKET` configurable and validate it with
 the MinIO SDK's strict naming rules. Do not silently normalize a user-supplied name.
 

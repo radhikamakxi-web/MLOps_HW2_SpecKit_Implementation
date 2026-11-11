@@ -51,7 +51,7 @@ The project provides a small MLOps-style zero-shot text classification platform 
 ### MinIO persistence
 
 - Each successful prediction shall be saved to MinIO under the configured bucket.
-- The default bucket is `zeroshot_learning_output`, configurable via `MINIO_BUCKET` and validated without silent name rewriting (ADR-001).
+- The default bucket is `zeroshot-learning-output`, configurable via `MINIO_BUCKET` and validated without silent name rewriting (ADR-001).
 - The object path shall follow `predictions/YYYY/MM/DD/{request_id}.json`.
 
 ## 5. Non-Functional Requirements

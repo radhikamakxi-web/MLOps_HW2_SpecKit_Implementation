@@ -103,7 +103,7 @@ The app includes at least two zero-shot models by default:
 - `MoritzLaurer/deberta-v3-base-zeroshot-v2.0`
 - `facebook/bart-large-mnli`
 
-The model list is configured in [`configs/models.yaml`](configs/models.yaml). Add an entry with `id`, `name`, and `task: zeroshot_learning_output` to extend the list. Being configured does **not** mean a model has been downloaded.
+The model list is configured in [`configs/models.yaml`](configs/models.yaml). Add an entry with `id`, `name`, and `task: zeroshot-learning-output` to extend the list. Being configured does **not** mean a model has been downloaded.
 
 ## Model Management Workflow
 
@@ -142,7 +142,7 @@ The classification page lets you select from these labels. The classifier trims 
 ## MinIO Bucket and Prediction Output
 
 /constitutionThe application uses `MINIO_BUCKET`, defaulting to the S3-compatible name
-`zeroshot_learning_output`. Invalid names are rejected rather than silently
+`zeroshot-learning-output`. Invalid names are rejected rather than silently
 rewritten. The naming exception to the homework example is documented in
 [ADR-001](specs/001-zero-shot-platform/decisions/001-adoption-and-bucket.md) and
 constitution 1.1.0. The storage service attempts to create the configured bucket

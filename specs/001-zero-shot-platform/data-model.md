@@ -5,10 +5,10 @@
 ## 1. Model Configuration
 
 ```yaml
-zeroshot_learning_outputmodels:
+zeroshot-learning-outputmodels:
   - id: MoritzLaurer/deberta-v3-base-zeroshot-v2.0
     name: DeBERTa Zero-Shot v2
-    task: zeroshot_learning_output
+    task: zeroshot-learning-output
     revision: main
   - id: facebook/bart-large-mnli
     name: BART MNLI
@@ -90,7 +90,7 @@ labels:
 - `model_revision` is a resolved SHA or null. Latency is finite, nonnegative
   milliseconds. The storage service validates the record and must not mutate it.
 - Object path: `predictions/YYYY/MM/DD/{request_id}.json`, using the record's UTC
-  timestamp. Default bucket: `zeroshot_learning_output`; no name normalization.
+  timestamp. Default bucket: `zeroshot-learning-output`; no name normalization.
 - Request states: validated → inferred → persisted. Only persisted is overall
   success. Inference/storage failures are separate; an inferred result with failed
   storage is NOT saved and cannot be treated as a complete successful request.
