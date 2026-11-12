@@ -52,8 +52,11 @@ if st.button("Classify"):
             "application_version": get_app_version(),
         }
         storage = MinIOStorage()
-        object_path = storage.save_prediction(payload)
-        st.success(f"Prediction saved to MinIO at {object_path}")
+        try:
+            object_path = storage.save_prediction(payload)
+            st.success(f"Prediction saved to MinIO at {object_path}")
+        except Exception as e:
+            st.warning(f"Classification succeeded, but saving the prediction to MinIO failed: {e}")
     except ValueError as exc:
         st.error(str(exc))
     except Exception as exc:

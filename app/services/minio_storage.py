@@ -8,6 +8,9 @@ from uuid import uuid4
 from minio import Minio
 
 from app.utils.config import get_minio_settings
+import io
+import json
+from uuid import uuid4
 
 
 class MinIOStorage:
@@ -35,11 +38,12 @@ class MinIOStorage:
         request_id = payload.get("request_id") or str(uuid4())
         payload["request_id"] = request_id
         object_path = self.build_object_path(request_id)
+        encoded_data = json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")
         self.client.put_object(
             self.bucket_name,
             object_path,
-            data=json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8"),
-            length=len(json.dumps(payload, ensure_ascii=False, indent=2).encode("utf-8")),
+            data=io.BytesIO(encoded_data),
+            length=len(encoded_data),
             content_type="application/json",
         )
         return object_path
