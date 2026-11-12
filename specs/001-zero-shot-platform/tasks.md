@@ -48,6 +48,7 @@ For each task, add focused failing tests first, implement the fix, and then run 
 - [ ] T016 Add opt-in live MinIO integration tests under `tests/` using a dedicated test bucket and synthetic data; document configuration in `README.md`.
 - [x] T017 Add MinIO service configuration in `docker-compose.yml` and the app `Dockerfile` (live container verification is T020).
 - [ ] T018 Add a CI workflow in `.github/workflows/` for offline tests, and a `.dockerignore` before building images so credentials, environments, and model artifacts are excluded.
+	- Basic CI scope (2026-11-11): add Python 3.10 Ruff/offline pytest checks on push/PR/manual runs, pinned test tools, network-disabled tests, isolated storage-test settings, and build exclusions. Fix only blocking imports/runtime compatibility; preserve the existing upload change. Keep this task open until GitHub execution and build exclusions are verified. Separate live MinIO CI, automated hygiene checks, and required-status enforcement remain outstanding.
 - [x] T019 Document setup, architecture, model management, tests, and current limitations in `README.md`; keep it updated when pending tasks are implemented.
 - [ ] T020 Validate and record the real model-download → inference → MinIO JSON flow in `README.md`; requires T009–T014, T016, and T027. Do not report this complete from mocked tests.
 - [x] T028 Verify official Spec Kit integration, workflow discovery, feature prerequisites, and unchanged application regressions; document usage in `README.md`.

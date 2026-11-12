@@ -19,10 +19,10 @@ are installed. Remediation R1 is **in progress**, not a completed release. Curre
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Labels           | YAML load/save helpers now exist, but the pages still hardcode options and Admin**Save labels** is not wired to persistence.                                                      |
 | Inference        | Classification still passes a repository ID rather than the managed local path; offline reuse and explicit PyTorch loading remain pending.                                        |
-| Storage          | `save_prediction()` still passes bytes rather than a readable stream. The new prediction validation module is not yet connected to the classifier/storage path.                   |
+| Storage          | `save_prediction()` now passes a readable stream. Prediction validation and live upload verification remain pending. |
 | Configuration    | The default bucket is now`zeroshot-learning-output`; storage credentials must be supplied through the environment. Existing environments using the old bucket name need updating. |
 | Revision/logging | Revision metadata is still hardcoded as`main`. Structured logging support exists, but operation-wide integration and redaction tests remain pending.                              |
-| Verification     | No CI or live MinIO integration suite exists yet. The earlier 64-test result predates the partial R1 code changes; it is not a current full-suite pass.                           |
+| Verification     | Basic GitHub Actions lint/offline-test workflow added; local checks pass. GitHub execution, live MinIO integration, and full constitutional quality gates remain unverified or pending. |
 
 The instructions below distinguish the implemented workflow from these remaining tasks. A displayed prediction alone is not proof that storage succeeded.
 
@@ -39,7 +39,7 @@ The application is separated into several key layers:
 ```text
 Streamlit Admin ──> ModelManager ──> Hugging Face / local model files
 Streamlit Classify ──> ZeroShotClassifier ──> Transformers pipeline
-                   └─> MinIOStorage ──> MinIO JSON object (upload fix pending)
+                   └─> MinIOStorage ──> MinIO JSON object (live verification pending)
 Configuration utilities ──> environment settings and YAML configuration
 ```
 
@@ -146,7 +146,7 @@ The classification page lets you select from these labels. The classifier trims 
 rewritten. The naming exception to the homework example is documented in
 [ADR-001](specs/001-zero-shot-platform/decisions/001-adoption-and-bucket.md) and
 constitution 1.1.0. The storage service attempts to create the configured bucket
-when missing; the upload fix remains pending.
+when missing; the stream-upload fix is present, but live verification remains pending.
 
 The intended persistence contract is one JSON object per successful classification, using a path similar to:
 `predictions/YYYY/MM/DD/{request_id}.json`
@@ -164,7 +164,7 @@ The classification page constructs a payload containing:
 - `model_revision`
 - `application_version`
 
-The page displays classification results before attempting the write. Until the raw-bytes upload bug is fixed, do not treat this intended persistence contract as a verified feature.
+The page displays classification results before attempting the write. The readable-stream fix is present, but the persistence contract still needs automated upload tests and live verification; a displayed result alone does not prove storage succeeded.
 
 ## Required Software
 
@@ -251,7 +251,7 @@ Open **http://127.0.0.1:8501**. This is a local URL, not a public hosted deploym
 - Submit input text
 - Review predicted class and confidence
 
-Download a model successfully before using **Classify**. The UI warns when no local model is available, but the button is not disabled. Storage testing remains blocked by the upload issue described above.
+Download a model successfully before using **Classify**. The UI warns when no local model is available, but the button is not disabled. Storage contract tests and live upload verification remain pending.
 
 ## Model Download and Cache Behavior
 
@@ -283,24 +283,58 @@ Check that the JSON matches the input, selected model, labels, and displayed sco
 
 `docker-compose.yml` starts **MinIO only**, exposes the API on port 9000 and the console on port 9001, and persists data in the `minio_data` named volume. It does not launch Streamlit.
 
-`Dockerfile` describes a Python 3.10 Streamlit image, but a complete app-and-MinIO container deployment has not been validated. Before building an image, add an appropriate `.dockerignore`: the current `COPY . .` would otherwise include local files such as `.env`, environments, model weights, and caches. Git ignore rules do not exclude files from a Docker build context. Do not publish an image containing credentials.
+`Dockerfile` describes a Python 3.10 Streamlit image, but a complete app-and-MinIO container deployment has not been validated. The new `.dockerignore` excludes local secret files, environments, models, caches, and prediction directories from `COPY . .`. Review any custom artifact locations and verify the build context before publishing; Git ignore rules alone do not exclude Docker build inputs. No image was built as part of the basic CI setup.
 
 ## Running Tests
 
 ```bash
+python -m pip install -r requirements-dev.txt
+python -m ruff check app tests
 python -m pytest -q tests/test_model_manager.py
-python -m pytest -q
+HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python -m pytest -q --disable-socket
 ```
 
-The last complete run **before R1 code changes** reported 60 model-manager tests
-and 64 total tests passing. It used mocked downloads and temporary directories,
-not live inference or MinIO. Do not treat that result as validation of the current
-partial changes: tests still need to be adapted to required storage credentials
-and the new contracts, then rerun.
+The basic CI setup was checked locally on 2026-11-11 using Python 3.14.7:
+Ruff passed and **64 tests passed** with sockets disabled. This is separate from
+the historical pre-R1 result. The storage-path test now supplies synthetic settings;
+no local credentials, running MinIO, or downloaded models are needed. The current
+tests do not verify real inference, upload success, or all pending R1 contracts.
+Python 3.10 is selected for GitHub CI; that runner has not yet been executed.
 
 [Validation evidence](specs/001-zero-shot-platform/validation.md) separates
 historical results, workflow checks, and blocked or unexecuted checks. Dependencies
 currently use minimum-version constraints, not a reproducible lockfile.
+
+## Basic CI with GitHub Actions
+
+[The CI workflow](.github/workflows/ci.yml) runs on every push and pull request,
+and supports manual dispatch after it is on the default branch. It checks out the
+code with read-only repository permissions, sets up Python 3.10, installs CPU
+PyTorch and development dependencies, checks dependency consistency, runs Ruff,
+and executes pytest with sockets disabled. Dependency installation uses the network;
+tests must not access MinIO or download Hugging Face models. No GitHub secrets are
+required for this offline job. Ruff checks Python errors and unused imports; it
+does not enforce a formatter or comprehensive security analysis.
+
+To activate and inspect CI:
+
+1. Review and commit the CI-related changes, then push your branch to GitHub.
+  Do not commit `.env`, model downloads, or local caches.
+2. In the repository's **Actions** tab, open **Basic CI** and inspect the install,
+  lint, and test logs. If Actions is disabled, enable it under **Settings →
+  Actions → General** (subject to your organization's policy).
+3. After the first run creates the check, configure a branch ruleset or branch
+  protection under **Settings → Rules → Rulesets** or **Settings → Branches**.
+  Require **Lint and offline tests (Python 3.10)** to pass before merging into
+  the default branch. Availability depends on repository permissions and plan.
+4. Open a pull request and verify the check actually runs and blocks a failed merge.
+
+GitHub execution and remote rules were not configured or verified by the local
+setup. T018 remains open pending its verification. This workflow is only the
+basic offline gate, not complete constitution v1.2.0 compliance: automated
+secret/artifact checks, a separate live MinIO job (T016/FR-008), a repeatable
+dependency lock/image digests (T030), and real-model evidence (T020) remain pending.
+The development tool versions are pinned; application dependencies are not locked.
 
 ## Spec Kit Installation and Project Status
 
@@ -470,7 +504,7 @@ dependencies, and do not download models or start services automatically.
 | MinIO connection fails                     | Check that Docker and MinIO are running; use`localhost:9000` from the host, not `minio:9000`. Ensure credentials match the server.                              |
 | Storage credentials rejected               | Set`MINIO_ACCESS_KEY` and `MINIO_SECRET_KEY`; empty values and `replace-me` are not valid configuration.                                                        |
 | Bucket name rejected                       | Set`MINIO_BUCKET` to an S3-compatible name such as `zeroshot-learning-output`.                                                                                  |
-| Upload fails despite displayed results     | The binary-stream fix in`MinIOStorage.save_prediction()` is pending; displaying a result does not prove persistence.                                            |
+| Upload fails despite displayed results     | The binary-stream fix is present, but live upload is unverified. Check storage configuration, server availability, and the saved object; displayed inference does not prove persistence. |
 | Label changes disappear                    | Persistence helpers exist, but the current Save button is not yet connected to them.                                                                            |
 
 Do not clear caches as a first response to every error. The cache-clearing action deletes all contents of the configured `HF_HOME`.

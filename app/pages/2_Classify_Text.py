@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from datetime import datetime
 from uuid import uuid4
 
@@ -25,7 +24,7 @@ if not available_models:
     st.warning("No local models are available. Download one from the admin page first.")
 
 selected_model = st.selectbox("Select model", available_models or ["No model available"])
-selected_labels = st.multiselect("Candidate labels", label_options, default=["sports", "politics", "technology", "finance"])
+selected_labels = st.multiselect("Candidate labels", label_options, default=["sports", "politics", "technology", "finance"], accept_new_options=True)
 text = st.text_area("Input text", value="The team won the championship after a very close game.")
 
 if st.button("Classify"):

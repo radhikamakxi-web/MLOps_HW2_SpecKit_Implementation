@@ -1,16 +1,13 @@
 from __future__ import annotations
 
+import io
 import json
-from datetime import datetime
-from pathlib import Path
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from minio import Minio
 
 from app.utils.config import get_minio_settings
-import io
-import json
-from uuid import uuid4
 
 
 class MinIOStorage:
@@ -29,7 +26,7 @@ class MinIOStorage:
             self.client.make_bucket(self.bucket_name)
 
     def build_object_path(self, request_id: str | None = None) -> str:
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         request_id = request_id or str(uuid4())
         return f"predictions/{now.year:04d}/{now.month:02d}/{now.day:02d}/{request_id}.json"
 

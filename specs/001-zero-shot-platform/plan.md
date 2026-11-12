@@ -88,6 +88,24 @@ storage or inference backend is introduced.
 	a dependency lock, `.dockerignore`, placeholder environment settings, and
 	documented service start/stop commands. Do not auto-download real model weights.
 
+### Basic CI setup scope (2026-11-11)
+
+Implement the offline portion of T018 first: GitHub Actions on pushes, pull requests,
+and manual dispatch; Python 3.10; pinned Ruff/pytest-socket tooling; default Ruff
+error checks; and pytest with sockets disabled and Hugging Face offline flags.
+Install CPU PyTorch on the runner; package installation requires network access,
+but test execution must not download models or contact storage. Isolate the storage
+path test from developer credentials with synthetic test-only configuration.
+Preserve the existing stream-upload fix while cleaning lint errors and replacing
+Python 3.11-only datetime imports to retain Python 3.10 compatibility.
+
+Add Docker build exclusions without building an image. Document GitHub activation
+and required-status configuration. This is partial constitution v1.2.0 coverage:
+the separate live MinIO job, automated secret/artifact checks, dependency lock,
+image digest pinning, and verified branch enforcement remain outstanding. Do not
+claim release compliance from the basic workflow or mark T018 complete before
+its GitHub execution and build-exclusion verification are recorded.
+
 ## 9. Constitution compliance gate for R1
 
 | Principle | Design / task mapping | Required evidence |
