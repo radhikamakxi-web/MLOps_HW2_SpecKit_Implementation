@@ -11,5 +11,5 @@ models/
 .idea/
 .vscode/
 minio-data/
-myrefer*.*
+myref*.*
 
