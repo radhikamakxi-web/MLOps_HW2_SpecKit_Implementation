@@ -6,8 +6,9 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import yaml
 from huggingface_hub import snapshot_download
-from huggingface_hub.utils import validate_repo_id
+from huggingface_hub.utils import HFValidationError, validate_repo_id
 
 from app.utils.config import BASE_DIR, get_hf_home, get_model_dir, get_transformers_cache, load_yaml_config
 
@@ -31,7 +32,56 @@ class ModelManager:
         return items if isinstance(items, list) else []
 
     def get_supported_models(self) -> list[dict[str, Any]]:
+        self.models = self._load_models()
         return self.models
+
+    def refresh_local_models(self) -> list[dict[str, Any]]:
+        self.models = self._load_models()
+        results: list[dict[str, Any]] = []
+        for model in self.models:
+            model_id = model.get("id", "")
+            status = "available" if model_id and self.model_exists(model_id) else "missing"
+            results.append({**model, "status": status})
+        return results
+
+    def add_model(
+        self,
+        model_id: str,
+        name: str = "",
+        task: str = "zero-shot-classification",
+    ) -> tuple[bool, str]:
+        clean_id = model_id.strip() if isinstance(model_id, str) else ""
+        if not clean_id:
+            return False, "Model identifier is required."
+
+        try:
+            validate_repo_id(clean_id)
+        except HFValidationError as exc:
+            return False, f"Invalid Hugging Face model ID: {exc}"
+
+        clean_name = name.strip() if isinstance(name, str) and name.strip() else clean_id
+        clean_task = task.strip() if isinstance(task, str) and task.strip() else "zero-shot-classification"
+
+        current_models = self._load_models()
+        if any(str(m.get("id", "")).lower() == clean_id.lower() for m in current_models):
+            return False, f"Model '{clean_id}' is already configured."
+
+        current_models.append(
+            {
+                "id": clean_id,
+                "name": clean_name,
+                "task": clean_task,
+            }
+        )
+
+        try:
+            self.config_path.parent.mkdir(parents=True, exist_ok=True)
+            serialized = yaml.safe_dump({"models": current_models}, sort_keys=False, allow_unicode=True)
+            self.config_path.write_text(serialized, encoding="utf-8")
+            self.models = current_models
+            return True, f"Model '{clean_name}' ({clean_id}) added to configuration."
+        except OSError as exc:
+            return False, f"Failed to save model configuration: {exc}"
 
     def get_model_path(self, model_id: str) -> Path:
         if not isinstance(model_id, str) or not model_id:
@@ -171,30 +221,18 @@ class ModelManager:
         try:
             path = self.get_model_path(model_id)
             if not path.exists():
-                return False, "Model not found locally."
+                return False, "Model is not downloaded locally."
             shutil.rmtree(path)
-            return True, "Model deleted successfully."
+            return True, f"Deleted local model '{model_id}'."
         except Exception as exc:
             return False, f"Failed to delete model: {exc}"
 
     def clear_hf_cache(self) -> tuple[bool, str]:
-        if not self.hf_home.exists():
-            return True, "Hugging Face cache directory does not exist."
+        
         try:
-            shutil.rmtree(self.hf_home)
+            if self.hf_home.exists():
+                shutil.rmtree(self.hf_home)
             self.hf_home.mkdir(parents=True, exist_ok=True)
             return True, "Hugging Face cache cleared."
         except Exception as exc:
-            return False, f"Failed to clear cache: {exc}"
-
-    def refresh_local_models(self) -> list[dict[str, Any]]:
-        entries = []
-        for model in self.models:
-            model_id = model.get("id")
-            try:
-                path = self.get_model_path(model_id)
-                status = "available" if self.model_exists(model_id) else "missing"
-                entries.append({**model, "status": status, "local_path": str(path)})
-            except (ValueError, OSError, RuntimeError) as exc:
-                entries.append({**model, "status": "invalid", "local_path": None, "error": str(exc)})
-        return entries
+            return False, f"Failed to clear Hugging Face cache: {exc}"

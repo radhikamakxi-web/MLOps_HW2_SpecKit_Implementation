@@ -1,7 +1,10 @@
 models:
-  - id: MoritzLaurer/deberta-v3-base-zeroshot-v2.0
-    name: DeBERTa Zero-Shot v2
-    task: zero-shot-classification
-  - id: facebook/bart-large-mnli
-    name: BART MNLI
-    task: zero-shot-classification
+- id: MoritzLaurer/deberta-v3-base-zeroshot-v2.0
+  name: DeBERTa Zero-Shot v2
+  task: zero-shot-classification
+- id: facebook/bart-large-mnli
+  name: BART MNLI
+  task: zero-shot-classification
+- id: valhalla/distilbart-mnli-12-1
+  name: valhalla/distilbart-mnli-12-1
+  task: zero-shot-classification
